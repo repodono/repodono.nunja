@@ -11,7 +11,8 @@ from repodono.model.http import Response
 from repodono.nunja.render import (
     NunjaRenderer,
     MoldDataRenderer,
-    StaticProvider,
+    ArtifactRenderer,
+    MappedDataProvider,
 )
 
 
@@ -32,24 +33,39 @@ class NunjaRendererTestCase(unittest.TestCase):
         })
 
 
-class MoldDataRendererTestCase(unittest.TestCase):
+class InstancedRendererTestCase(unittest.TestCase):
     """
-    MoldDataRendere
+    These are in no way a proper test.
+
+    A separate integration test will be provided with the aid of a set
+    of integration data.
     """
 
-    def test_base_render(self):
+    # XXX note that these tests are actually redundant at this point due
+    # to the usage of mocks.
+
+    def test_mold_data_render(self):
         loader = Mock()
         loader.return_value = 'output'
         renderer = MoldDataRenderer(loader=loader)
-        result = renderer(mold_id_path='some.demo/mold/file.txt')
+        result = renderer(identifier='some.demo/mold/file.txt')
         self.assertTrue(loader.called_with(
-            mold_id_path='some.demo/mold/file.txt'))
+            identifier='some.demo/mold/file.txt'))
+        self.assertEqual(result.content, 'output')
+
+    def test_artifact_render(self):
+        loader = Mock()
+        loader.return_value = 'output'
+        renderer = ArtifactRenderer(loader=loader)
+        result = renderer(identifier='some.package:artifact.bin')
+        self.assertTrue(loader.called_with(
+            identifier='some.package:artifact.bin'))
         self.assertEqual(result.content, 'output')
 
 
-class StaticProviderTestCase(unittest.TestCase):
+class MappedDataProviderTestCase(unittest.TestCase):
     """
-    StaticProvider
+    MappedDataProvider
     """
 
     def test_base_lookup(self):
@@ -60,8 +76,8 @@ class StaticProviderTestCase(unittest.TestCase):
         loader = Mock()
         loader.return_value = 'output'
         renderer = MoldDataRenderer(loader=loader)
-        sp = StaticProvider(mapping=mapping, renderer=renderer)
-        result = sp(filename='logo.png')
+        provider = MappedDataProvider(mapping=mapping, renderer=renderer)
+        result = provider(filename='logo.png')
         self.assertTrue(loader.called_with(
-            mold_id_path='some.demo/mold/logo.png'))
+            identifier='some.demo/mold/logo.png'))
         self.assertEqual(result.content, 'output')
