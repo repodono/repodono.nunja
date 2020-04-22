@@ -11,7 +11,24 @@ class NunjaRenderer(object):
     def __init__(self, engine=engine):
         self.engine = engine
 
+    def execute(self, mold_id, data):
+        return self.engine.execute(mold_id, data)
+
+    def render(self, mold_id, data):
+        return self.engine.render(mold_id, data)
+
+    def render_template(self, mold_id_template, data):
+        """
+        Shorthand for rendering a template within a mold.
+        """
+
+        return self.engine.load_template(mold_id_template).render(**data)
+
     def __call__(self, mold_id, data={}, content_type='text/html'):
+        """
+        Generates a full response
+        """
+
         content = self.engine.render(mold_id, data)
         headers = {
             'Content-type': content_type,
