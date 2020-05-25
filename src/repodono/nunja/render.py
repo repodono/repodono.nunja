@@ -56,10 +56,10 @@ class NunjaRenderer(object):
         self.engine = engine
 
     def execute(self, mold_id, data):
-        return self.engine.execute(mold_id, data)
+        return self.engine.execute(mold_id, data=data)
 
     def render(self, mold_id, data):
-        return self.engine.render(mold_id, data)
+        return self.engine.render(mold_id, data=data)
 
     def render_template(self, mold_id_template, data):
         """
@@ -73,7 +73,7 @@ class NunjaRenderer(object):
         Generates a full response
         """
 
-        content = self.engine.render(mold_id, data)
+        content = self.engine.render(mold_id, data=data)
         headers = {
             'Content-type': content_type,
         }

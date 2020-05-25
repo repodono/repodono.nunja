@@ -99,8 +99,8 @@ class NunjaRendererTestCase(unittest.TestCase):
         engine.render.return_value = 'output'
         renderer = NunjaRenderer(engine=engine)
         result = renderer('mold_id', data={'key': 'value'})
-        self.assertTrue(engine.execute.called_with(
-            mold_id='mold_id', data={'key': 'value'}))
+        engine.render.assert_called_with(
+            'mold_id', data={'key': 'value'})
 
         self.assertTrue(isinstance(result, Response))
         self.assertEqual(result.content, b'output')
@@ -113,8 +113,7 @@ class NunjaRendererTestCase(unittest.TestCase):
         engine.execute.return_value = 'output'
         renderer = NunjaRenderer(engine=engine)
         result = renderer.execute('mold_id', data={'key': 'value'})
-        self.assertTrue(engine.execute.called_with(
-            mold_id='mold_id', data={'key': 'value'}))
+        engine.execute.assert_called_with('mold_id', data={'key': 'value'})
         self.assertEqual(result, 'output')
 
     def test_render_called_with(self):
@@ -122,8 +121,7 @@ class NunjaRendererTestCase(unittest.TestCase):
         engine.render.return_value = 'output'
         renderer = NunjaRenderer(engine=engine)
         result = renderer.render('mold_id', data={'key': 'value'})
-        self.assertTrue(engine.render.called_with(
-            mold_id='mold_id', data={'key': 'value'}))
+        engine.render.assert_called_with('mold_id', data={'key': 'value'})
         self.assertEqual(result, 'output')
 
     def test_render_template_called_with(self):
@@ -134,9 +132,8 @@ class NunjaRendererTestCase(unittest.TestCase):
         renderer = NunjaRenderer(engine=engine)
         result = renderer.render_template(
             'mold_id_template', data={'key': 'value'})
-        self.assertTrue(engine.load_template.called_with(
-            mold_id_template='mold_id_template'))
-        self.assertTrue(template.render.called_with(key='value'))
+        engine.load_template.assert_called_with('mold_id_template')
+        template.render.assert_called_with(key='value')
         self.assertEqual(result, 'output')
 
 
@@ -156,8 +153,7 @@ class InstancedRendererTestCase(unittest.TestCase):
         loader.return_value = 'output'
         renderer = MoldDataRenderer(loader=loader)
         result = renderer(identifier='some.demo/mold/file.txt')
-        self.assertTrue(loader.called_with(
-            identifier='some.demo/mold/file.txt'))
+        loader.assert_called_with('some.demo/mold/file.txt')
         self.assertEqual(result.content, b'output')
 
     def test_artifact_render(self):
@@ -165,8 +161,7 @@ class InstancedRendererTestCase(unittest.TestCase):
         loader.return_value = 'output'
         renderer = ArtifactRenderer(loader=loader)
         result = renderer(identifier='some.package:artifact.bin')
-        self.assertTrue(loader.called_with(
-            identifier='some.package:artifact.bin'))
+        loader.assert_called_with('some.package:artifact.bin')
         self.assertEqual(result.content, b'output')
 
 
@@ -185,6 +180,5 @@ class MappedDataProviderTestCase(unittest.TestCase):
         renderer = MoldDataRenderer(loader=loader)
         provider = MappedDataProvider(mapping=mapping, renderer=renderer)
         result = provider(filename='logo.png')
-        self.assertTrue(loader.called_with(
-            identifier='some.demo/mold/logo.png'))
+        loader.assert_called_with('some.demo/mold/logo.png')
         self.assertEqual(result.content, b'output')
