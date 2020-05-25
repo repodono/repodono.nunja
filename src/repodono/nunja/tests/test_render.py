@@ -9,11 +9,87 @@ from unittest.mock import Mock
 
 from repodono.model.http import Response
 from repodono.nunja.render import (
+    TemplateRenderWrapper,
+    JinjaRenderer,
     NunjaRenderer,
     MoldDataRenderer,
     ArtifactRenderer,
     MappedDataProvider,
 )
+
+
+class TemplateWrapperTestCase(unittest.TestCase):
+
+    def test_construction(self):
+        result = TemplateRenderWrapper(object, {'content-type': 'text/plain'})
+        self.assertIs(result.template, object)
+        self.assertEqual(result.headers, {'content-type': 'text/plain'})
+        self.assertEqual(result.data, {})
+
+    def test_build_data(self):
+        trw = TemplateRenderWrapper(object, {}, {'a': 'b'})
+        self.assertEqual({
+            'a': 'b',
+            'c': 'd',
+        }, trw.build_data(c='d'))
+
+        self.assertEqual({
+            'a': 'bbbb',
+        }, trw.build_data(a='bbbb'))
+
+    def test_prerender(self):
+        template = object()
+        headers = {}
+        trw = TemplateRenderWrapper(template, headers)
+        trw1 = trw.prerender(a='b')
+        self.assertIs(trw1.template, template)
+        self.assertIs(trw1.headers, headers)
+        self.assertEqual(trw1.data, {'a': 'b'})
+        trw2 = trw1.prerender(c='d')
+        self.assertIs(trw2.template, template)
+        self.assertIs(trw2.headers, headers)
+        self.assertEqual(trw2.data, {'a': 'b', 'c': 'd'})
+
+    def test_call(self):
+        template = Mock()
+        template.render.return_value = ''
+        headers = {}
+        trw = TemplateRenderWrapper(template, headers)
+        trw()
+        template.render.assert_called_with()
+
+        trw1 = trw.prerender(a='b')
+        trw1()
+        template.render.assert_called_with(a='b')
+
+        trw1(cc='dd')
+        template.render.assert_called_with(a='b', cc='dd')
+
+
+class JinjaRendererTestCase(unittest.TestCase):
+
+    def test_render_template_called_with(self):
+        engine = Mock()
+        engine.render_template.return_value = 'output'
+        renderer = JinjaRenderer(engine=engine)
+        result = renderer('mold_id', data={'key': 'value'})
+        engine.render_template.assert_called_with(
+            'mold_id', data={'key': 'value'})
+
+        self.assertTrue(isinstance(result, Response))
+        self.assertEqual(result.content, b'output')
+        self.assertEqual(result.headers, {
+            'Content-type': 'text/html',
+        })
+
+    def test_load_template_called_with(self):
+        engine = Mock()
+        template = Mock()
+        engine.load_template.return_value = template
+        renderer = JinjaRenderer(engine=engine)
+        result = renderer.load_template('mold_id', data={'key': 'value'})
+        self.assertTrue(result, isinstance(result, TemplateRenderWrapper))
+        self.assertIs(result.template, template)
 
 
 class NunjaRendererTestCase(unittest.TestCase):
