@@ -37,7 +37,7 @@ setup(
         'setuptools',
         # -*- Extra requirements: -*-
         'repodono.model'
-        ' @ git+https://github.com/repodono.model/repodono.model.git@demo',
+        ' @ git+https://github.com/repodono/repodono.model.git@demo',
     ],
     extras_require={
     },
